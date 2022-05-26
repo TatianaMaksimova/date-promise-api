@@ -1,36 +1,77 @@
 import '../css/work-common.css';
 
-const timer = {
-  start() {
-    const startTime = Date.now();
-
-    setInterval(() => {
-      const currentTime = Date.now();
-      const deltaTime = currentTime - startTime;
-      const { hours, mins, secs } = getTimeComponents(deltaTime);
-      //   console.log('currentTime', currentTime);
-      //   console.log('startTime', startTime);
-      //   console.log('Таймер запущен');
-      //   console.log(currentTime - startTime);
-      //   console.log(timeComponents); деструктуризация с { hours, mins, secs }
-      console.log(`${hours}:${mins}:${secs}`);
-    }, 1000);
-  },
+const refs = {
+  startBtn: document.querySelector('button[data-action-start]'),
+  stopBtn: document.querySelector('button[data-action-stop]'),
+  clockface: document.querySelector('.js-clockface'),
 };
 
-// timer.start();
+class Timer {
+  constructor({ onTick }) {
+    this.intervalId = null;
+    this.isActive = false;
+    this.onTick = onTick;
+    this.init();
+  }
 
-/*
- * Принимает число, приводит к строке и добавляет в начало 0 если число меньше 2-х знаков
- */
-function pad(value) {
-  return String(value).padStart(2, '0');
+  init() {
+    const time = this.getTimeComponents(0);
+    this.onTick(time);
+  }
+
+  start() {
+    if (this.isActive) {
+      return;
+    }
+
+    const startTime = Date.now();
+    this.isActive = true;
+
+    this.intervalId = setInterval(() => {
+      const currentTime = Date.now();
+      const deltaTime = currentTime - startTime;
+      const time = this.getTimeComponents(deltaTime);
+
+      this.onTick(time);
+    }, 1000);
+  }
+
+  stop() {
+    clearInterval(this.intervalId);
+    this.isActive = false;
+    const time = this.getTimeComponents(0);
+    this.onTick(time);
+  }
+
+  getTimeComponents(time) {
+    const hours = this.pad(Math.floor((time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+    const mins = this.pad(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60)));
+    const secs = this.pad(Math.floor((time % (1000 * 60)) / 1000));
+
+    return { hours, mins, secs };
+  }
+
+  // Принимает число, приводит к строке и добавляет в начало 0 если число меньше 2-х знаков
+  pad(value) {
+    return String(value).padStart(2, '0');
+  }
 }
 
-function getTimeComponents(time) {
-  const hours = pad(Math.floor((time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
-  const mins = pad(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60)));
-  const secs = pad(Math.floor((time % (1000 * 60)) / 1000));
+const timer = new Timer({
+  onTick: updateClockface,
+});
 
-  return { hours, mins, secs };
+// refs.startBtn.addEventListener('click', () => {
+//   timer.start();
+// });
+// refs.stopBtn.addEventListener('click', () => {
+//   timer.stop();
+// });
+
+refs.startBtn.addEventListener('click', timer.start.bind(timer));
+refs.stopBtn.addEventListener('click', timer.stop.bind(timer));
+
+// внешняя функция для обновления интерфейса
+function updateClockface({ hours, mins, secs }) {
+  refs.clockface.textContent = `${hours}:${mins}:${secs}`;
 }
