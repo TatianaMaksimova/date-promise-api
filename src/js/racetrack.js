@@ -45,7 +45,7 @@ function updateProgressField(message) {
 }
 
 function updateResultsTable({ horse, time, raceCounter }) {
-  const tr = `<tr><td>${raceCounter}</td><td>${horse}</td>${time}<td></td></tr>`;
+  const tr = `<tr><td>${raceCounter}</td><td>${horse}</td><td>${time}</td></tr>`;
   refs.tableBody.insertAdjacentHTML('beforeend', tr);
 }
 
