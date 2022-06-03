@@ -3,4 +3,4 @@ parcelRequire=function(e,r,t,n){var i,o="function"==typeof parcelRequire&&parcel
 },{}],"pEcx":[function(require,module,exports) {
 "use strict";require("../css/work-common.css");const e=Date.now();setTimeout(()=>{Date.now()},3e3);
 },{"../css/work-common.css":"mgHw"}]},{},["pEcx"], null)
-//# sourceMappingURL=/date-promise-api/date.2976cfbb.js.map
+//# sourceMappingURL=/date-promise-api/date.bff7fe95.js.map
