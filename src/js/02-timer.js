@@ -5,6 +5,7 @@
 // Используй библиотеку flatpickr для того чтобы позволить пользователю кроссбраузерно выбрать конечную дату и время в одном элементе интерфейса.
 
 import '../css/common.css';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 // Описан в документации
 import flatpickr from 'flatpickr';
@@ -12,7 +13,6 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
 const refs = {
-  datetimePickerInput: document.getElementById('datetime-picker'),
   startBtn: document.querySelector('button[data-start]'),
   daysValue: document.querySelector('span[data-days]'),
   hoursValue: document.querySelector('span[data-hours]'),
@@ -20,11 +20,8 @@ const refs = {
   secondsValue: document.querySelector('span[data-seconds]'),
 };
 
-refs.datetimePickerInput.addEventListener('click', x => {
-  console.log(x);
-});
-
-flatpickr(refs.datetimePickerInput, options);
+const INTERVAL = 1000;
+refs.startBtn.disabled = true;
 
 const options = {
   enableTime: true,
@@ -32,11 +29,23 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    console.log(selectedDates[0]);
+    const currentDateTime = Date.now();
+    refs.startBtn.disabled = true;
+    if (selectedDates[0] < currentDateTime) {
+      return window.alert('Please choose a date in the future');
+    } else {
+      refs.startBtn.disabled = false;
+      refs.startBtn.addEventListener('click', onTimerStarts);
+    }
+    // console.log(selectedDates[0]);
   },
 };
 
-// window.alert('Please choose a date in the future');
+flatpickr('#datetime-picker', options);
+
+function onTimerStarts(e) {
+  const intervalID = setInterval(() => {}, INTERVAL);
+}
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
@@ -47,19 +56,14 @@ function convertMs(ms) {
 
   // Remaining days
   const days = Math.floor(ms / day);
-  // Remaining hours
   const hours = Math.floor((ms % day) / hour);
-  // Remaining minutes
   const minutes = Math.floor(((ms % day) % hour) / minute);
-  // Remaining seconds
   const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
   return { days, hours, minutes, seconds };
 }
 
 // console.log(convertMs(2000)); // {days: 0, hours: 0, minutes: 0, seconds: 2}
-// console.log(convertMs(140000)); // {days: 0, hours: 0, minutes: 2, seconds: 20}
-// console.log(convertMs(24140000)); // {days: 0, hours: 6 minutes: 42, seconds: 20}
 
 function addLeadingZero(value) {
   padStart();
