@@ -1,18 +1,23 @@
-// Напиши скрипт таймера, который ведёт обратный отсчет до определенной даты. Такой таймер может использоваться в блогах и интернет-магазинах, страницах регистрации событий, во время технического обслуживания и т.д.
-
-// Добавь минимальное оформление элементов интерфейса.
-
-// Используй библиотеку flatpickr для того чтобы позволить пользователю кроссбраузерно выбрать конечную дату и время в одном элементе интерфейса.
+// Таймер обратного отсчета. Напиши скрипт таймера, который ведёт обратный отсчет до определенной даты. Такой таймер может использоваться в блогах и интернет-магазинах, страницах регистрации событий, во время технического обслуживания и т.д.
 
 import '../css/common.css';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-
-// Описан в документации
 import flatpickr from 'flatpickr';
 // Дополнительный импорт стилей
 import 'flatpickr/dist/flatpickr.min.css';
 
+Notify.init({
+  width: '100%',
+  position: 'center-top',
+
+  warning: {
+    background: '#FF00FF',
+    notiflixIconColor: '#696969',
+  },
+});
+
 const refs = {
+  input: document.getElementById('datetime-picker'),
   startBtn: document.querySelector('button[data-start]'),
   daysValue: document.querySelector('span[data-days]'),
   hoursValue: document.querySelector('span[data-hours]'),
@@ -22,6 +27,7 @@ const refs = {
 
 const INTERVAL = 1000;
 let intervalID = null;
+let selectDate = 0;
 refs.startBtn.disabled = true;
 
 const options = {
@@ -30,34 +36,40 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    // refs.startBtn.disabled = true;
+    selectDate = selectedDates[0];
+    refs.startBtn.disabled = true;
 
     if (selectedDates[0] < new Date()) {
       return Notify.warning('Please choose a date in the future');
+    } else {
+      refs.startBtn.disabled = false;
     }
-
-    clearInterval(intervalID);
-    refs.startBtn.disabled = false;
-
-    function onTimerStarts() {
-      intervalID = setInterval(() => {
-        const deltaTime = selectedDates[0] - new Date();
-
-        if (deltaTime < 1000) {
-          clearInterval(intervalID);
-        }
-
-        const theLastTime = convertMs(deltaTime);
-        updateTime(theLastTime);
-      }, INTERVAL);
-    }
-    refs.startBtn.addEventListener('click', onTimerStarts);
-
-    // console.log(selectedDates[0]);
   },
 };
 
-flatpickr('#datetime-picker', options);
+flatpickr(refs.input, options);
+
+refs.startBtn.addEventListener('click', onTimerStarts);
+refs.input.addEventListener('input', () => {
+  clearInterval(intervalID);
+});
+
+function onTimerStarts() {
+  intervalID = setInterval(() => {
+    const deltaTime = selectDate - new Date();
+    console.log(deltaTime);
+
+    if (deltaTime < 1000) {
+      clearInterval(intervalID);
+    }
+
+    const theLastTime = convertMs(deltaTime);
+
+    updateTime(theLastTime);
+  }, INTERVAL);
+
+  refs.startBtn.disabled = true;
+}
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
@@ -67,10 +79,10 @@ function convertMs(ms) {
   const day = hour * 24;
 
   // Remaining days
-  const days = Math.floor(ms / day);
-  const hours = Math.floor((ms % day) / hour);
-  const minutes = Math.floor(((ms % day) % hour) / minute);
-  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+  const days = addLeadingZero(Math.floor(ms / day));
+  const hours = addLeadingZero(Math.floor((ms % day) / hour));
+  const minutes = addLeadingZero(Math.floor(((ms % day) % hour) / minute));
+  const seconds = addLeadingZero(Math.floor((((ms % day) % hour) % minute) / second));
 
   return { days, hours, minutes, seconds };
 }
@@ -85,6 +97,5 @@ function updateTime({ days, hours, minutes, seconds }) {
 }
 
 function addLeadingZero(value) {
-  // padStart();
   return `${value}`.padStart(2, '0');
 }
